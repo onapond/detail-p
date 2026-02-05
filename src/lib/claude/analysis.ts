@@ -1,11 +1,17 @@
 import { createAnthropicClient, CLAUDE_MODEL, MAX_TOKENS, prepareImageForVision } from './client';
 import { PRODUCT_ANALYSIS_PROMPT } from './prompts';
+import { trackUsage } from '@/lib/usage-tracker';
 import type { ProductAnalysis } from '@/types';
+
+export interface AnalysisResult {
+  analysis: ProductAnalysis;
+  usage?: { inputTokens: number; outputTokens: number };
+}
 
 export async function analyzeProductImage(
   imageBase64: string,
   mimeType: string
-): Promise<ProductAnalysis> {
+): Promise<AnalysisResult> {
   const client = createAnthropicClient();
 
   const response = await client.messages.create({
@@ -38,12 +44,24 @@ export async function analyzeProductImage(
   }
 
   const analysis: ProductAnalysis = JSON.parse(jsonMatch[0]);
-  return analysis;
+
+  // Track usage
+  if (response.usage) {
+    trackUsage('/api/analyze', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+  }
+
+  return {
+    analysis,
+    usage: response.usage ? {
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    } : undefined,
+  };
 }
 
 export async function analyzeMultipleImages(
   images: Array<{ base64: string; mimeType: string }>
-): Promise<ProductAnalysis> {
+): Promise<AnalysisResult> {
   const client = createAnthropicClient();
 
   const imageBlocks = images.map(({ base64, mimeType }) =>
@@ -78,5 +96,17 @@ export async function analyzeMultipleImages(
   }
 
   const analysis: ProductAnalysis = JSON.parse(jsonMatch[0]);
-  return analysis;
+
+  // Track usage
+  if (response.usage) {
+    trackUsage('/api/analyze', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+  }
+
+  return {
+    analysis,
+    usage: response.usage ? {
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    } : undefined,
+  };
 }

@@ -1,6 +1,7 @@
 import { createAnthropicClient, CLAUDE_MODEL } from './client';
 import { TEMPLATE_CONTENT_PROMPT } from './prompts';
 import { getHtmlTemplate, getIconSvg, ICON_SVG_MAP } from '@/lib/templates/html-templates';
+import { trackUsage } from '@/lib/usage-tracker';
 import type { ProductAnalysis, CopywritingResult, Template } from '@/types';
 
 // 템플릿 콘텐츠 타입
@@ -75,6 +76,11 @@ export async function generateDetailPageHTML(
       },
     ],
   });
+
+  // Track usage
+  if (response.usage) {
+    trackUsage('/api/generate-html', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+  }
 
   const textContent = response.content.find((block) => block.type === 'text');
   if (!textContent || textContent.type !== 'text') {
@@ -381,6 +387,11 @@ ${feedback}
       },
     ],
   });
+
+  // Track usage
+  if (response.usage) {
+    trackUsage('/api/generate-html/refine', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+  }
 
   const textContent = response.content.find((block) => block.type === 'text');
   if (!textContent || textContent.type !== 'text') {

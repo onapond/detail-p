@@ -24,11 +24,11 @@ export async function POST(request: Request) {
       }
     }
 
-    const analysis = await analyzeMultipleImages(images);
+    const result = await analyzeMultipleImages(images);
 
     return NextResponse.json<ApiResponse<ProductAnalysis>>({
       success: true,
-      data: analysis,
+      data: result.analysis,
     });
   } catch (error) {
     console.error('Analysis error:', error);

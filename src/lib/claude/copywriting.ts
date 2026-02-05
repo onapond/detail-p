@@ -1,5 +1,6 @@
 import { createAnthropicClient, CLAUDE_MODEL, MAX_TOKENS } from './client';
 import { COPYWRITING_PROMPT, CATEGORY_PROMPTS } from './prompts';
+import { trackUsage } from '@/lib/usage-tracker';
 import type { ProductAnalysis, CopywritingResult } from '@/types';
 
 export async function generateCopywriting(
@@ -38,6 +39,12 @@ export async function generateCopywriting(
   }
 
   const copywriting: CopywritingResult = JSON.parse(jsonMatch[0]);
+
+  // Track usage
+  if (response.usage) {
+    trackUsage('/api/copywriting', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+  }
+
   return copywriting;
 }
 
@@ -79,5 +86,11 @@ ${feedback}
   }
 
   const refinedCopywriting: CopywritingResult = JSON.parse(jsonMatch[0]);
+
+  // Track usage
+  if (response.usage) {
+    trackUsage('/api/copywriting/refine', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+  }
+
   return refinedCopywriting;
 }
