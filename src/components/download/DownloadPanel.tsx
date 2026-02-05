@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, FileCode, Image, Archive, Check } from 'lucide-react';
+import { Download, FileCode, Image, Archive, Check, ImageDown } from 'lucide-react';
 import type { UploadedImage } from '@/types';
 
 interface DownloadPanelProps {
@@ -103,6 +103,36 @@ export function DownloadPanel({ html, images, productName }: DownloadPanelProps)
     }
   };
 
+  const handleDownloadAsImage = async () => {
+    setDownloading('image');
+    try {
+      const response = await fetch('/api/capture-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          html,
+          width: 1200,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to capture image');
+      }
+
+      const blob = await response.blob();
+      saveAs(blob, `${safeName}_detail.png`);
+      setDownloaded((prev) => new Set(prev).add('image'));
+    } catch (error) {
+      console.error('Image capture error:', error);
+      alert('이미지 캡처에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setDownloading(null);
+    }
+  };
+
   const DownloadButton = ({
     id,
     icon: Icon,
@@ -143,7 +173,7 @@ export function DownloadPanel({ html, images, productName }: DownloadPanelProps)
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <DownloadButton
             id="html"
             icon={FileCode}
@@ -159,6 +189,13 @@ export function DownloadPanel({ html, images, productName }: DownloadPanelProps)
             onClick={handleDownloadImages}
           />
           <DownloadButton
+            id="image"
+            icon={ImageDown}
+            label="전체 이미지"
+            description="상세페이지 PNG 이미지"
+            onClick={handleDownloadAsImage}
+          />
+          <DownloadButton
             id="all"
             icon={Archive}
             label="전체 다운로드"
@@ -166,6 +203,9 @@ export function DownloadPanel({ html, images, productName }: DownloadPanelProps)
             onClick={handleDownloadAll}
           />
         </div>
+        <p className="text-xs text-muted-foreground mt-4 text-center">
+          * 네이버 스마트스토어 등 CSS 제한이 있는 플랫폼에서는 &quot;전체 이미지&quot; 다운로드를 권장합니다.
+        </p>
       </CardContent>
     </Card>
   );
