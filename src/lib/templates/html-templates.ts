@@ -82,6 +82,11 @@ export const ICON_SVG_MAP: Record<string, string> = {
   'crown': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg>',
   'medal': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>',
   'gem': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>',
+
+  // Location
+  'map-pin': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  'globe': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+  'mountain': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/><path d="M4.14 15.08c2.62-1.57 5.24-1.43 7.86.42 2.74 1.94 5.49 2 8.23.19"/></svg>',
 };
 
 // 아이콘 렌더링 헬퍼 함수
@@ -790,7 +795,7 @@ export const BASE_STYLES = `
 </style>
 `;
 
-// 커피 전용 템플릿
+// 커피 전용 템플릿 (전문 원두 상세페이지 스타일)
 export const COFFEE_TEMPLATE = `
 <!DOCTYPE html>
 <html lang="ko">
@@ -800,28 +805,30 @@ export const COFFEE_TEMPLATE = `
   <title>{{PRODUCT_NAME}} - 상세페이지</title>
   ${BASE_STYLES}
   <style>
-    /* Coffee Theme - using CSS variables with brown accent */
+    /* Coffee Theme - Premium Brown Accent */
     :root {
       --coffee-accent: #8b5a2b;
       --coffee-accent-light: #d4a574;
+      --coffee-accent-dark: #5c3d1e;
+      --coffee-cream: #f5f0e8;
     }
 
     .coffee-hero-bg {
-      background: linear-gradient(135deg, var(--color-gray-900) 0%, #3d2c1f 50%, var(--color-gray-900) 100%);
+      background: linear-gradient(135deg, #1a1410 0%, #2d2118 50%, #1a1410 100%);
     }
     .coffee-hero-bg::before {
-      background: radial-gradient(ellipse at 30% 20%, rgba(139,90,43,0.2) 0%, transparent 50%);
+      background: radial-gradient(ellipse at 30% 20%, rgba(139,90,43,0.25) 0%, transparent 50%);
     }
 
     .hero-badge {
-      background: rgba(139,90,43,0.2);
-      border-color: rgba(139,90,43,0.4);
+      background: rgba(212,165,116,0.2);
+      border-color: rgba(212,165,116,0.4);
       color: var(--coffee-accent-light);
     }
 
     .hero-floating-badge {
       background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%);
-      box-shadow: 0 10px 30px rgba(139,90,43,0.4);
+      box-shadow: 0 10px 30px rgba(139,90,43,0.5);
     }
 
     .story-label { color: var(--coffee-accent); }
@@ -829,6 +836,7 @@ export const COFFEE_TEMPLATE = `
     .feature-icon { background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%); }
     .story-image-accent { background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%); }
 
+    /* 테이스팅 노트 태그 */
     .tasting-wheel {
       display: flex;
       justify-content: center;
@@ -838,44 +846,280 @@ export const COFFEE_TEMPLATE = `
     }
     .tasting-note {
       padding: var(--space-1) var(--space-3);
-      background: rgba(139,90,43,0.1);
-      border: 1px solid rgba(139,90,43,0.2);
+      background: rgba(212,165,116,0.15);
+      border: 1px solid rgba(212,165,116,0.3);
       border-radius: var(--radius-full);
       font-size: var(--text-sm);
       font-weight: 600;
+      color: var(--coffee-accent-light);
+    }
+
+    /* 원두 정보 카드 */
+    .bean-info-section {
+      background: var(--coffee-cream);
+      padding: var(--space-10) var(--space-6);
+    }
+    .bean-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-6);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .bean-info-card {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-md);
+    }
+    .bean-info-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-3);
+      border-bottom: 2px solid var(--coffee-cream);
+    }
+    .bean-info-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+    .bean-info-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+    .bean-info-title {
+      font-size: var(--text-lg);
+      font-weight: 700;
+      color: var(--color-gray-900);
+    }
+    .bean-info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .bean-info-item {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--color-gray-100);
+    }
+    .bean-info-item:last-child {
+      border-bottom: none;
+    }
+    .bean-info-label {
+      color: var(--color-gray-500);
+      font-size: var(--text-sm);
+    }
+    .bean-info-value {
+      color: var(--color-gray-900);
+      font-weight: 600;
+      font-size: var(--text-sm);
+    }
+
+    /* 플레이버 프로필 바 */
+    .flavor-profile {
+      background: #ffffff;
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-lg);
+      max-width: 600px;
+      margin: var(--space-8) auto 0;
+    }
+    .flavor-profile-title {
+      text-align: center;
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: var(--space-5);
+    }
+    .flavor-bar-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+    .flavor-bar-item:last-child {
+      margin-bottom: 0;
+    }
+    .flavor-bar-label {
+      width: 60px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--color-gray-700);
+      text-align: right;
+    }
+    .flavor-bar-track {
+      flex: 1;
+      height: 12px;
+      background: var(--color-gray-100);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    .flavor-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--coffee-accent-light) 0%, var(--coffee-accent) 100%);
+      border-radius: var(--radius-full);
+      transition: width 0.5s ease;
+    }
+    .flavor-bar-value {
+      width: 30px;
+      font-size: var(--text-sm);
+      font-weight: 700;
       color: var(--coffee-accent);
     }
 
-    .roast-level {
+    /* 로스팅 레벨 */
+    .roast-section {
+      background: linear-gradient(135deg, #2d2118 0%, #1a1410 100%);
+      padding: var(--space-10) var(--space-6);
+      color: #ffffff;
+    }
+    .roast-content {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .roast-level-display {
       display: flex;
+      justify-content: center;
       align-items: center;
       gap: var(--space-1);
-      margin-top: var(--space-3);
+      margin: var(--space-6) 0;
     }
-    .roast-bar {
-      flex: 1;
-      height: 8px;
-      background: var(--color-gray-200);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
+    .roast-bean {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
     }
-    .roast-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--coffee-accent-light) 0%, var(--coffee-accent) 100%);
-      border-radius: var(--radius-sm);
+    .roast-bean.light { background: #d4a574; }
+    .roast-bean.medium-light { background: #b8864a; }
+    .roast-bean.medium { background: #8b5a2b; }
+    .roast-bean.medium-dark { background: #5c3d1e; }
+    .roast-bean.dark { background: #3d2815; }
+    .roast-bean.active {
+      transform: scale(1.3);
+      box-shadow: 0 0 20px rgba(212,165,116,0.6);
+    }
+    .roast-bean.inactive {
+      opacity: 0.3;
+    }
+    .roast-labels {
+      display: flex;
+      justify-content: space-between;
+      max-width: 300px;
+      margin: 0 auto;
+      font-size: var(--text-xs);
+      color: rgba(255,255,255,0.6);
+    }
+    .roast-name-display {
+      font-size: var(--text-3xl);
+      font-weight: 800;
+      color: var(--coffee-accent-light);
+      margin-top: var(--space-4);
+    }
+    .roast-description {
+      color: rgba(255,255,255,0.7);
+      margin-top: var(--space-2);
+      font-size: var(--text-base);
     }
 
+    /* 분쇄 옵션 */
+    .grind-section {
+      padding: var(--space-10) var(--space-6);
+      background: #ffffff;
+    }
+    .grind-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-3);
+      max-width: 900px;
+      margin: var(--space-6) auto 0;
+    }
+    .grind-card {
+      background: var(--coffee-cream);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    .grind-card:hover {
+      border-color: var(--coffee-accent);
+      transform: translateY(-4px);
+    }
+    .grind-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto var(--space-2);
+      background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+    .grind-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+    .grind-name {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--color-gray-900);
+      margin-bottom: 4px;
+    }
+    .grind-desc {
+      font-size: var(--text-xs);
+      color: var(--color-gray-500);
+    }
+
+    /* 추출 가이드 */
+    .brewing-section {
+      padding: var(--space-10) var(--space-6);
+      background: var(--coffee-cream);
+    }
+    .brewing-tabs {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-6);
+      flex-wrap: wrap;
+    }
+    .brewing-tab {
+      padding: var(--space-2) var(--space-4);
+      background: #ffffff;
+      border: 2px solid var(--color-gray-200);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--color-gray-600);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .brewing-tab.active {
+      background: var(--coffee-accent);
+      border-color: var(--coffee-accent);
+      color: #ffffff;
+    }
     .brewing-card {
       background: #ffffff;
       border-radius: var(--radius-lg);
-      padding: var(--space-4);
+      padding: var(--space-5);
       text-align: center;
       box-shadow: var(--shadow-md);
     }
     .brewing-icon {
       width: 64px;
       height: 64px;
-      margin: 0 auto var(--space-2);
+      margin: 0 auto var(--space-3);
       background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%);
       border-radius: var(--radius-lg);
       display: flex;
@@ -889,7 +1133,7 @@ export const COFFEE_TEMPLATE = `
     }
     .brewing-value {
       font-size: var(--text-2xl);
-      font-weight: 700;
+      font-weight: 800;
       color: var(--coffee-accent);
     }
     .brewing-label {
@@ -898,6 +1142,31 @@ export const COFFEE_TEMPLATE = `
       margin-top: var(--space-1);
     }
 
+    /* 리뷰/후기 섹션 */
+    .review-highlight {
+      background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%);
+      color: #ffffff;
+      padding: var(--space-10) var(--space-6);
+      text-align: center;
+    }
+    .review-quote {
+      font-size: var(--text-2xl);
+      font-weight: 600;
+      max-width: 700px;
+      margin: 0 auto var(--space-4);
+      line-height: 1.5;
+    }
+    .review-author {
+      font-size: var(--text-base);
+      opacity: 0.9;
+    }
+    .review-stars {
+      color: #ffc107;
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-3);
+    }
+
+    /* CTA 버튼 */
     .cta-button {
       background: linear-gradient(135deg, var(--coffee-accent) 0%, var(--coffee-accent-light) 100%);
       box-shadow: 0 10px 30px rgba(139,90,43,0.4);
@@ -908,6 +1177,25 @@ export const COFFEE_TEMPLATE = `
 
     .trust-badge-icon {
       color: var(--coffee-accent);
+    }
+
+    /* 반응형 */
+    @media (max-width: 768px) {
+      .bean-info-grid {
+        grid-template-columns: 1fr;
+      }
+      .grind-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .roast-bean {
+        width: 30px;
+        height: 30px;
+      }
+    }
+    @media (max-width: 480px) {
+      .grind-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
   </style>
 </head>
@@ -934,6 +1222,57 @@ export const COFFEE_TEMPLATE = `
       </div>
     </section>
 
+    <!-- 원두 정보 섹션 -->
+    <section class="bean-info-section">
+      <div style="text-align: center; margin-bottom: var(--space-8);">
+        <span class="story-label">BEAN INFORMATION</span>
+        <h2 class="headline-lg">원두 상세 정보</h2>
+      </div>
+      <div class="bean-info-grid">
+        <div class="bean-info-card">
+          <div class="bean-info-header">
+            <div class="bean-info-icon">{{ICON_MAP_PIN}}</div>
+            <span class="bean-info-title">원산지 정보</span>
+          </div>
+          <ul class="bean-info-list">
+            {{ORIGIN_INFO_LIST}}
+          </ul>
+        </div>
+        <div class="bean-info-card">
+          <div class="bean-info-header">
+            <div class="bean-info-icon">{{ICON_BEAN}}</div>
+            <span class="bean-info-title">원두 특성</span>
+          </div>
+          <ul class="bean-info-list">
+            {{BEAN_INFO_LIST}}
+          </ul>
+        </div>
+      </div>
+
+      <!-- 플레이버 프로필 -->
+      <div class="flavor-profile">
+        <h3 class="flavor-profile-title">Flavor Profile</h3>
+        {{FLAVOR_BARS}}
+      </div>
+    </section>
+
+    <!-- 로스팅 레벨 섹션 -->
+    <section class="roast-section">
+      <div class="roast-content">
+        <span class="story-label" style="color: var(--coffee-accent-light);">ROASTING LEVEL</span>
+        <h2 class="headline-lg" style="color: #ffffff;">로스팅 레벨</h2>
+        <div class="roast-level-display">
+          {{ROAST_BEANS}}
+        </div>
+        <div class="roast-labels">
+          <span>라이트</span>
+          <span>다크</span>
+        </div>
+        <div class="roast-name-display">{{ROAST_NAME}}</div>
+        <p class="roast-description">{{ROAST_DESCRIPTION}}</p>
+      </div>
+    </section>
+
     <!-- 특징 섹션 -->
     <section class="section section-light">
       <div style="text-align: center; margin-bottom: var(--space-8);">
@@ -945,7 +1284,19 @@ export const COFFEE_TEMPLATE = `
       </div>
     </section>
 
-    <!-- 스토리 섹션 1 -->
+    <!-- 분쇄 옵션 -->
+    <section class="grind-section">
+      <div style="text-align: center; margin-bottom: var(--space-4);">
+        <span class="story-label">GRIND OPTIONS</span>
+        <h2 class="headline-lg">분쇄 옵션 선택</h2>
+        <p class="body-md" style="margin-top: var(--space-2);">추출 방식에 맞는 분쇄도를 선택하세요</p>
+      </div>
+      <div class="grind-grid">
+        {{GRIND_OPTIONS}}
+      </div>
+    </section>
+
+    <!-- 스토리 섹션 -->
     <section class="section section-gray">
       <div class="story-section">
         <div class="story-image-wrap">
@@ -956,40 +1307,46 @@ export const COFFEE_TEMPLATE = `
           <span class="story-label">OUR STORY</span>
           <h2 class="story-title">{{STORY_TITLE_1}}</h2>
           <p class="story-text">{{STORY_TEXT_1}}</p>
-          <div class="roast-level">
-            <span style="font-weight: 600; color: var(--color-gray-700);">로스팅 레벨</span>
-            <div class="roast-bar">
-              <div class="roast-fill" style="width: {{ROAST_LEVEL}}%;"></div>
-            </div>
-            <span style="font-weight: 600; color: var(--coffee-accent);">{{ROAST_NAME}}</span>
-          </div>
         </div>
       </div>
     </section>
 
     <!-- 추출 가이드 -->
-    <section class="section section-light">
-      <div style="text-align: center; margin-bottom: var(--space-8);">
+    <section class="brewing-section">
+      <div style="text-align: center; margin-bottom: var(--space-6);">
         <span class="story-label">BREWING GUIDE</span>
         <h2 class="headline-lg">완벽한 한 잔을 위한 추출 가이드</h2>
+      </div>
+      <div class="brewing-tabs">
+        <span class="brewing-tab active">핸드드립</span>
+        <span class="brewing-tab">에스프레소</span>
+        <span class="brewing-tab">프렌치프레스</span>
+        <span class="brewing-tab">콜드브루</span>
       </div>
       <div class="features-grid">
         <div class="brewing-card">
           <div class="brewing-icon">{{ICON_THERMOMETER}}</div>
-          <div class="brewing-value">92-96°C</div>
+          <div class="brewing-value">{{BREW_TEMP}}</div>
           <div class="brewing-label">추출 온도</div>
         </div>
         <div class="brewing-card">
           <div class="brewing-icon">{{ICON_SCALE}}</div>
-          <div class="brewing-value">1:15</div>
+          <div class="brewing-value">{{BREW_RATIO}}</div>
           <div class="brewing-label">커피 : 물 비율</div>
         </div>
         <div class="brewing-card">
           <div class="brewing-icon">{{ICON_TIMER}}</div>
-          <div class="brewing-value">2:30-3:00</div>
+          <div class="brewing-value">{{BREW_TIME}}</div>
           <div class="brewing-label">추출 시간</div>
         </div>
       </div>
+    </section>
+
+    <!-- 리뷰 하이라이트 -->
+    <section class="review-highlight">
+      <div class="review-stars">{{REVIEW_STARS}}</div>
+      <p class="review-quote">"{{REVIEW_QUOTE}}"</p>
+      <p class="review-author">- {{REVIEW_AUTHOR}}</p>
     </section>
 
     <!-- 신뢰 섹션 -->
@@ -1002,7 +1359,7 @@ export const COFFEE_TEMPLATE = `
     </section>
 
     <!-- CTA 섹션 -->
-    <section class="cta-section">
+    <section class="cta-section" style="background: linear-gradient(135deg, #1a1410 0%, #2d2118 100%);">
       <h2 class="cta-title">{{CTA_TITLE}}</h2>
       <p class="cta-subtitle">{{CTA_SUBTITLE}}</p>
       <a href="#" class="cta-button">

@@ -180,8 +180,46 @@ crown, medal, gem, gift, percent, tag
 ### 커피 (coffee)
 {
   "tastingNotes": ["향미 노트1", "향미 노트2", "향미 노트3"],
-  "roastLevel": 70,
-  "roastName": "미디엄 다크"
+  "roastLevel": 3,
+  "roastName": "미디엄 다크",
+  "roastDescription": "로스팅 특성 설명 (예: 균형 잡힌 바디감과 은은한 단맛)",
+
+  "originInfo": [
+    {"label": "산지", "value": "예: 에티오피아 예가체프"},
+    {"label": "농장/지역", "value": "예: 코체레 지역"},
+    {"label": "고도", "value": "예: 1,800-2,200m"},
+    {"label": "가공방식", "value": "예: 워시드"}
+  ],
+  "beanInfo": [
+    {"label": "품종", "value": "예: 아라비카 (헤어룸)"},
+    {"label": "수확시기", "value": "예: 2024년 1월"},
+    {"label": "등급", "value": "예: G1 스페셜티"},
+    {"label": "로스팅일", "value": "예: 주문 후 당일 로스팅"}
+  ],
+  "flavorProfile": [
+    {"name": "산미", "value": 80},
+    {"name": "바디", "value": 60},
+    {"name": "단맛", "value": 70},
+    {"name": "쓴맛", "value": 40},
+    {"name": "향", "value": 90}
+  ],
+  "grindOptions": [
+    {"name": "홀빈", "desc": "그라인더 소유자"},
+    {"name": "에스프레소", "desc": "가정용 머신"},
+    {"name": "핸드드립", "desc": "푸어오버"},
+    {"name": "프렌치프레스", "desc": "침출식"},
+    {"name": "콜드브루", "desc": "저온 추출"}
+  ],
+  "brewingGuide": {
+    "temp": "92-96°C",
+    "ratio": "1:15",
+    "time": "2분 30초"
+  },
+  "featuredReview": {
+    "stars": 5,
+    "quote": "대표 리뷰 내용 (진정성 있고 구체적으로)",
+    "author": "구매자명 (예: 커피러버 김**)"
+  }
 }
 
 ### 건강기능식품 (health_supplement)

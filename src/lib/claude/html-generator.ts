@@ -24,10 +24,17 @@ interface TemplateContent {
   productInfo: Array<{ label: string; value: string }>;
   badgeLabel: string;
   badgeValue: string;
-  // 카테고리별
+  // 커피 카테고리
   tastingNotes?: string[];
   roastLevel?: number;
   roastName?: string;
+  roastDescription?: string;
+  originInfo?: Array<{ label: string; value: string }>;
+  beanInfo?: Array<{ label: string; value: string }>;
+  flavorProfile?: Array<{ name: string; value: number }>;
+  grindOptions?: Array<{ name: string; desc: string }>;
+  brewingGuide?: { temp: string; ratio: string; time: string };
+  featuredReview?: { stars: number; quote: string; author: string };
   certifications?: string[];
   functionalClaim?: string;
   ingredients?: Array<{ amount: string; name: string }>;
@@ -174,8 +181,82 @@ export async function generateDetailPageHTML(
       `<span class="tasting-note">${n}</span>`
     ).join('');
     html = html.replace(/\{\{TASTING_NOTES\}\}/g, tastingNotes);
-    html = html.replace(/\{\{ROAST_LEVEL\}\}/g, String(content.roastLevel || 50));
     html = html.replace(/\{\{ROAST_NAME\}\}/g, content.roastName || '미디엄');
+    html = html.replace(/\{\{ROAST_DESCRIPTION\}\}/g, content.roastDescription || '균형 잡힌 풍미');
+
+    // 원산지 정보 리스트
+    const originInfoList = (content.originInfo || []).map(item => `
+      <li class="bean-info-item">
+        <span class="bean-info-label">${item.label}</span>
+        <span class="bean-info-value">${item.value}</span>
+      </li>
+    `).join('');
+    html = html.replace(/\{\{ORIGIN_INFO_LIST\}\}/g, originInfoList);
+
+    // 원두 정보 리스트
+    const beanInfoList = (content.beanInfo || []).map(item => `
+      <li class="bean-info-item">
+        <span class="bean-info-label">${item.label}</span>
+        <span class="bean-info-value">${item.value}</span>
+      </li>
+    `).join('');
+    html = html.replace(/\{\{BEAN_INFO_LIST\}\}/g, beanInfoList);
+
+    // 플레이버 프로필 바
+    const flavorBars = (content.flavorProfile || []).map(f => `
+      <div class="flavor-bar-item">
+        <span class="flavor-bar-label">${f.name}</span>
+        <div class="flavor-bar-track">
+          <div class="flavor-bar-fill" style="width: ${f.value}%;"></div>
+        </div>
+        <span class="flavor-bar-value">${f.value}</span>
+      </div>
+    `).join('');
+    html = html.replace(/\{\{FLAVOR_BARS\}\}/g, flavorBars);
+
+    // 로스팅 레벨 빈 디스플레이 (1-5)
+    const roastLevel = content.roastLevel || 3;
+    const roastBeans = [1, 2, 3, 4, 5].map(level => {
+      const isActive = level === roastLevel;
+      const isInactive = level !== roastLevel;
+      const levelClass = level === 1 ? 'light' : level === 2 ? 'medium-light' : level === 3 ? 'medium' : level === 4 ? 'medium-dark' : 'dark';
+      const stateClass = isActive ? 'active' : isInactive ? 'inactive' : '';
+      return `<div class="roast-bean ${levelClass} ${stateClass}"></div>`;
+    }).join('');
+    html = html.replace(/\{\{ROAST_BEANS\}\}/g, roastBeans);
+
+    // 분쇄 옵션
+    const coffeeIconSvg = getIconSvg('coffee', 24, '#ffffff');
+    const grindOptions = (content.grindOptions || [
+      { name: '홀빈', desc: '그라인더 소유자' },
+      { name: '에스프레소', desc: '가정용 머신' },
+      { name: '핸드드립', desc: '푸어오버' },
+      { name: '프렌치프레스', desc: '침출식' },
+      { name: '콜드브루', desc: '저온 추출' }
+    ]).map(opt => `
+      <div class="grind-card">
+        <div class="grind-icon">${coffeeIconSvg}</div>
+        <div class="grind-name">${opt.name}</div>
+        <div class="grind-desc">${opt.desc}</div>
+      </div>
+    `).join('');
+    html = html.replace(/\{\{GRIND_OPTIONS\}\}/g, grindOptions);
+
+    // 추출 가이드
+    const brew = content.brewingGuide || { temp: '92-96°C', ratio: '1:15', time: '2분 30초' };
+    html = html.replace(/\{\{BREW_TEMP\}\}/g, brew.temp);
+    html = html.replace(/\{\{BREW_RATIO\}\}/g, brew.ratio);
+    html = html.replace(/\{\{BREW_TIME\}\}/g, brew.time);
+
+    // 대표 리뷰
+    const review = content.featuredReview || { stars: 5, quote: '정말 맛있는 커피입니다!', author: '커피러버 김**' };
+    html = html.replace(/\{\{REVIEW_STARS\}\}/g, '★'.repeat(review.stars) + '☆'.repeat(5 - review.stars));
+    html = html.replace(/\{\{REVIEW_QUOTE\}\}/g, review.quote);
+    html = html.replace(/\{\{REVIEW_AUTHOR\}\}/g, review.author);
+
+    // 아이콘들
+    html = html.replace(/\{\{ICON_MAP_PIN\}\}/g, getIconSvg('map-pin', 24, '#ffffff'));
+    html = html.replace(/\{\{ICON_BEAN\}\}/g, getIconSvg('bean', 24, '#ffffff'));
   }
 
   if (analysis.category === 'health_supplement') {
