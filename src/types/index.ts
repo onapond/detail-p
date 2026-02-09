@@ -1,18 +1,51 @@
+// 제품 카테고리 타입
+export type ProductCategory = 'coffee' | 'health_supplement' | 'processed_food' | 'beverage';
+
+// 템플릿 스타일 타입
+export type TemplateStyle = 'modern' | 'classic' | 'premium';
+
+// 가격 포지셔닝
+export type PricePositioning = 'premium' | 'mid-range' | 'budget';
+
+// 브랜드 보이스
+export type BrandVoice = 'professional' | 'friendly' | 'luxury' | 'natural';
+
+// 컬러 스킴 인터페이스
+export interface ColorScheme {
+  primary: string;
+  primaryLight: string;
+  primaryDark: string;
+  accent: string;
+  heroGradient: string;
+  heroBgBefore: string;
+  cream: string;        // 배경 보조색
+  badgeBg: string;
+  badgeBorder: string;
+  badgeText: string;
+  ctaGradient: string;
+  ctaShadow: string;
+}
+
 // 제품 분석 결과 타입
 export interface ProductAnalysis {
   productName: string;
-  category: 'coffee' | 'health_supplement' | 'processed_food' | 'beverage' | 'other';
+  category: ProductCategory;
   mainFeatures: string[];
   benefits: string[];
   targetAudience: string;
   priceRange?: string;
+  pricePositioning?: PricePositioning;
+  brandVoice?: BrandVoice;
+  suggestedStyle?: TemplateStyle;
+  packageSize?: string;        // 패키지 크기/중량
   origin?: string;
   certifications?: string[];
   ingredients?: string[];
-  tastingNotes?: string[];  // 커피 특화
-  roastingLevel?: string;   // 커피 특화
-  functionalClaims?: string[];  // 건기식 특화
-  cautionNotes?: string[];  // 건기식 특화
+  tastingNotes?: string[];     // 커피 특화
+  roastingLevel?: string;      // 커피 특화
+  functionalClaims?: string[]; // 건기식 특화
+  cautionNotes?: string[];     // 건기식 특화
+  allergenInfo?: string[];     // 알레르기 정보
 }
 
 // 카피라이팅 결과 타입
@@ -42,7 +75,8 @@ export interface Template {
   name: string;
   description: string;
   thumbnail: string;
-  category: 'modern' | 'classic' | 'minimal';
+  category: ProductCategory;
+  style: TemplateStyle;
   sections: TemplateSection[];
 }
 

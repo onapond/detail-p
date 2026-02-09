@@ -14,7 +14,6 @@ const categoryLabels: Record<ProductAnalysis['category'], string> = {
   health_supplement: '건강기능식품',
   processed_food: '가공식품',
   beverage: '음료',
-  other: '기타',
 };
 
 export function AnalysisResult({ analysis }: AnalysisResultProps) {

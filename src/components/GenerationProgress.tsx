@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 
 interface GenerationProgressProps {
   state: GenerationState;
+  streamingText?: string;
 }
 
 const steps = [
@@ -17,7 +18,7 @@ const steps = [
   { id: 'complete', label: '완료', icon: Sparkles },
 ];
 
-export function GenerationProgress({ state }: GenerationProgressProps) {
+export function GenerationProgress({ state, streamingText }: GenerationProgressProps) {
   if (state.step === 'idle') return null;
 
   const currentStepIndex = steps.findIndex((s) => s.id === state.step);
@@ -80,6 +81,17 @@ export function GenerationProgress({ state }: GenerationProgressProps) {
               );
             })}
           </div>
+
+          {/* Streaming Text Display */}
+          {streamingText && (state.step === 'analyzing' || state.step === 'generating_copy') && (
+            <div className="bg-muted/50 rounded-lg p-4 max-h-32 overflow-y-auto">
+              <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">
+                {streamingText.length > 500
+                  ? '...' + streamingText.slice(-500)
+                  : streamingText}
+              </pre>
+            </div>
+          )}
 
           {/* Error Message */}
           {state.step === 'error' && state.error && (

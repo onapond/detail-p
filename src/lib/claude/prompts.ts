@@ -5,22 +5,31 @@ export const PRODUCT_ANALYSIS_PROMPT = `당신은 식품 및 건강기능식품 
 
 ## 분석 항목
 1. productName: 제품명 (이미지에서 확인 가능한 경우)
-2. category: 카테고리 (coffee, health_supplement, processed_food, beverage, other 중 하나)
+2. category: 카테고리 (coffee, health_supplement, processed_food, beverage 중 하나. 반드시 이 4개 중 하나를 선택하세요. 가장 근접한 카테고리로 매핑하세요.)
 3. mainFeatures: 제품의 주요 특징 3-5개 (배열)
 4. benefits: 소비자 혜택 3-5개 (배열)
 5. targetAudience: 주요 타겟 고객층
-6. origin: 원산지 (확인 가능한 경우)
-7. certifications: 인증마크 (유기농, HACCP 등, 확인 가능한 경우)
-8. ingredients: 주요 원재료 (확인 가능한 경우)
+6. priceRange: 예상 가격대 (이미지에서 확인 가능한 경우)
+7. pricePositioning: 가격 포지셔닝 (premium, mid-range, budget 중 하나)
+8. brandVoice: 브랜드 톤앤매너 (professional, friendly, luxury, natural 중 하나)
+9. suggestedStyle: 추천 디자인 스타일 (modern, classic, premium 중 하나)
+10. packageSize: 패키지 크기/중량 (확인 가능한 경우, 예: "200g", "30정", "500ml")
+11. origin: 원산지 (확인 가능한 경우)
+12. certifications: 인증마크 (유기농, HACCP, GMP 등, 확인 가능한 경우)
+13. ingredients: 주요 원재료 (확인 가능한 경우)
+14. allergenInfo: 알레르기 유발 물질 (확인 가능한 경우, 예: ["우유", "대두", "밀"])
 
 ## 카테고리별 추가 분석
-- 커피: tastingNotes (향미 노트), roastingLevel (로스팅 레벨)
-- 건강기능식품: functionalClaims (기능성 표시), cautionNotes (섭취 주의사항)
+- 커피(coffee): tastingNotes (향미 노트), roastingLevel (로스팅 레벨)
+- 건강기능식품(health_supplement): functionalClaims (기능성 표시), cautionNotes (섭취 주의사항)
+- 가공식품(processed_food): 맛/조리법 특징에 주목
+- 음료(beverage): 풍미/온도/시즌 특성에 주목
 
 ## 중요 규칙
 - 이미지에서 확인할 수 없는 정보는 추측하지 마세요
 - 과장된 표현은 피하고 사실에 기반해주세요
 - 식약처 표시기준에 맞는 용어를 사용해주세요
+- category는 반드시 coffee, health_supplement, processed_food, beverage 중 하나여야 합니다
 
 다음 JSON 형식으로만 응답해주세요:
 {
@@ -29,9 +38,15 @@ export const PRODUCT_ANALYSIS_PROMPT = `당신은 식품 및 건강기능식품 
   "mainFeatures": [],
   "benefits": [],
   "targetAudience": "",
+  "priceRange": "",
+  "pricePositioning": "",
+  "brandVoice": "",
+  "suggestedStyle": "",
+  "packageSize": "",
   "origin": "",
   "certifications": [],
   "ingredients": [],
+  "allergenInfo": [],
   "tastingNotes": [],
   "roastingLevel": "",
   "functionalClaims": [],
@@ -44,19 +59,21 @@ export const COPYWRITING_PROMPT = `당신은 식품 및 건강기능식품 전�
 ## 제품 분석 정보
 {ANALYSIS_DATA}
 
+## 스타일 방향
+{STYLE}
+- modern: 깔끔하고 임팩트 있는 톤. 짧고 강렬한 카피. 여백을 살리는 간결한 표현.
+- classic: 정보 전달 중심의 신뢰감 있는 톤. 구체적인 수치와 데이터 활용.
+- premium: 절제된 고급감. 럭셔리하고 세련된 표현. 감성적 스토리텔링.
+
 ## 작성 항목
 1. headline: 메인 헤드라인 (주목을 끄는 한 문장, 20자 이내)
 2. subheadline: 서브 헤드라인 (헤드라인 보충 설명, 40자 이내)
-3. productDescription: 제품 상세 설명 (2-3문단)
+3. productDescription: 제품 상세 설명 (2-3문단, 스타일에 맞는 톤으로)
 4. keyBenefits: 핵심 혜택 3-5개 (간결한 문장으로)
 5. callToAction: 구매 유도 문구
 6. trustElements: 신뢰 요소 3개 (인증, 수상, 리뷰 멘션 등)
 7. seoKeywords: SEO 키워드 5-10개
-
-## 카테고리별 특화
-- 커피: 원두의 스토리, 로스팅 과정, 테이스팅 경험 강조
-- 건강기능식품: 과학적 근거, 안전성, 섭취 편의성 강조
-- 가공식품: 맛, 품질, 가성비 강조
+8. regulatoryWarnings: 필수 표기 문구 (해당 시)
 
 ## 규제 준수 (중요!)
 - 건강기능식품: 식약처 인정 기능성 문구만 사용
@@ -89,6 +106,12 @@ export const TEMPLATE_CONTENT_PROMPT = `당신은 프리미엄 식품 상세페�
 ## 카테고리
 {CATEGORY}
 
+## 스타일 방향
+{STYLE}
+- modern: 임팩트 있고 깔끔하게. 짧고 강렬한 문구. 현대적 감각.
+- classic: 정보 전달 중심. 신뢰감 있고 체계적. 전통적 구성.
+- premium: 절제된 고급감. 럭셔리한 표현. 감성적 스토리텔링.
+
 ## 중요: 아이콘 사용 규칙
 
 이모지를 절대 사용하지 마세요. 대신 아래 아이콘 이름 중에서 선택하세요.
@@ -120,7 +143,8 @@ crown, medal, gem, gift, percent, tag
 
 - **커피**: coffee, thermometer, scale, timer, bean, flame, droplets, sparkles
 - **건강기능식품**: shield-check, heart, leaf, pill, activity, brain, eye, sunrise
-- **일반 식품**: utensils, flame, sparkles, heart, star, check-circle
+- **가공식품**: utensils, flame, sparkles, heart, star, check-circle, cherry, wheat
+- **음료**: droplets, sparkles, heart, star, thermometer, sun, zap, refresh-cw
 
 ## 생성할 콘텐츠 (JSON 형식)
 
@@ -235,12 +259,42 @@ crown, medal, gem, gift, percent, tag
   "dosageItems": [
     {"time": "시간", "icon": "아이콘이름", "text": "섭취 방법"}
   ],
-  "cautionNotes": "주의사항 문구"
+  "cautionNotes": "주의사항 문구",
+  "allergenWarning": "알레르기 유발 물질 정보",
+  "clinicalEvidence": "임상 시험/과학적 근거 요약"
 }
 
-### 일반 식품
+### 가공식품 (processed_food)
 {
-  "tasteTags": ["맛 태그1", "맛 태그2"]
+  "tasteTags": ["맛 태그1", "맛 태그2"],
+  "recipeSuggestions": [
+    {"title": "레시피 제목", "description": "간단한 레시피 설명"}
+  ],
+  "nutritionHighlights": [
+    {"label": "영양소명", "value": "함량", "unit": "단위"}
+  ],
+  "allergenInfo": "알레르기 유발 물질 (해당 시)",
+  "cookingProcess": [
+    {"step": "단계", "description": "조리/활용 방법"}
+  ],
+  "servingSuggestion": "추천 서빙 방법"
+}
+
+### 음료 (beverage)
+{
+  "tasteTags": ["맛 태그1", "맛 태그2"],
+  "flavorProfile": [
+    {"name": "풍미 특성", "value": 80}
+  ],
+  "servingTemp": "추천 음용 온도 (예: 차갑게 4-8°C)",
+  "pairings": ["페어링 추천1", "페어링 추천2"],
+  "servingSuggestions": [
+    {"title": "서빙 방법", "description": "설명"}
+  ],
+  "seasonTpo": "시즌/TPO 추천 (예: 여름 야외활동, 운동 후)",
+  "nutritionHighlights": [
+    {"label": "영양소명", "value": "함량", "unit": "단위"}
+  ]
 }
 
 JSON만 응답해주세요. 설명 없이 순수 JSON만 출력하세요.`;
@@ -282,11 +336,41 @@ export const HTML_GENERATION_PROMPT = `당신은 전문 웹 디자이너입니�
 
 완성된 HTML 코드만 응답해주세요. 설명이나 마크다운 없이 순수 HTML만 출력하세요.`;
 
-// 카테고리별 추가 프롬프트 (호환성 유지)
+// 카테고리별 추가 프롬프트
 export const CATEGORY_PROMPTS: Record<string, string> = {
-  coffee: '',
-  health_supplement: '',
-  processed_food: '',
-  beverage: '',
-  other: ''
+  coffee: `
+
+## 커피 카테고리 특화 지침
+- 원두의 산지 스토리를 감성적으로 풀어주세요 (농장, 고도, 기후 등)
+- 감각적 언어를 적극 사용하세요 (향, 맛, 질감을 구체적으로)
+- 서드웨이브 커피 문화를 반영하세요 (스페셜티, 싱글오리진, 핸드드립 등)
+- 로스팅 프로필과 추출 가이드를 포함하면 전문성이 높아집니다
+- 테이스팅 노트는 과일, 꽃, 견과류 등 SCA 기준으로 표현하세요`,
+
+  health_supplement: `
+
+## 건강기능식품 카테고리 특화 지침
+- 과학적 근거를 바탕으로 신뢰감을 구축하세요 (임상 시험, 특허 성분 등)
+- 식약처 인정 기능성 문구만 사용하세요 (효능 과장 절대 금지)
+- 안전성과 품질 관리를 강조하세요 (HACCP, GMP, 원료 추적성)
+- 복용 타이밍과 방법을 구체적으로 안내하세요
+- 주의사항과 알레르기 정보를 반드시 포함하세요`,
+
+  processed_food: `
+
+## 가공식품 카테고리 특화 지침
+- 맛과 편의성을 중심으로 소구하세요
+- 가족/일상 식사와 연결하는 따뜻한 톤을 사용하세요
+- 레시피 활용법을 제안하여 구매 동기를 높이세요
+- 원재료의 신선함과 안전한 제조 과정을 강조하세요
+- 영양 정보와 알레르기 정보를 포함하세요`,
+
+  beverage: `
+
+## 음료 카테고리 특화 지침
+- 청량감, 상쾌함 등 감각적 표현을 사용하세요
+- TPO(시간/장소/상황)별 음용 시나리오를 제안하세요
+- 페어링 추천으로 활용도를 높여주세요 (음식, 간식, 디저트 등)
+- 시즌별 매력을 강조하세요 (여름 시원하게, 겨울 따뜻하게 등)
+- 영양 성분 하이라이트로 건강한 선택임을 어필하세요`,
 };

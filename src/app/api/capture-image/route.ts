@@ -27,6 +27,17 @@ export async function POST(request: NextRequest) {
 
     const page = await browser.newPage();
 
+    // SSRF 방지: 외부 네트워크 요청 차단 (data: URI와 인라인 리소스만 허용)
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      const url = req.url();
+      if (url.startsWith('data:') || url === 'about:blank') {
+        req.continue();
+      } else {
+        req.abort();
+      }
+    });
+
     // Set viewport width (height will be determined by content)
     await page.setViewport({
       width: Number(width),
@@ -34,9 +45,9 @@ export async function POST(request: NextRequest) {
       deviceScaleFactor: 2, // 2x for high resolution
     });
 
-    // Set content and wait for fonts/images to load
+    // Set content (외부 요청이 차단되므로 domcontentloaded만 대기)
     await page.setContent(html, {
-      waitUntil: ['domcontentloaded', 'networkidle0'],
+      waitUntil: 'domcontentloaded',
       timeout: 30000,
     });
 

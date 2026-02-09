@@ -15,7 +15,7 @@ import { GenerationProgress } from '@/components/GenerationProgress';
 import { ImageGenerator } from '@/components/image-generator/ImageGenerator';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGeneration } from '@/hooks/useGeneration';
-import { templates } from '@/lib/templates';
+import { templates, getDefaultTemplate } from '@/lib/templates';
 import type { Template } from '@/types';
 import { Sparkles, Upload, Wand2, Eye, Download, Coffee, RefreshCw } from 'lucide-react';
 
@@ -35,6 +35,7 @@ export default function Home() {
     analysis,
     copywriting,
     generatedHtml,
+    streamingText,
     generate,
     updateCopywriting,
     refineCopy,
@@ -46,8 +47,8 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState('upload');
 
   const handleGenerate = async () => {
-    await generate(images, selectedTemplate);
-    if (state.step !== 'error') {
+    const success = await generate(images, selectedTemplate);
+    if (success) {
       setActiveTab('result');
     }
   };
@@ -102,7 +103,7 @@ export default function Home() {
         {/* Generation Progress */}
         {isGenerating && (
           <div className="mb-8">
-            <GenerationProgress state={state} />
+            <GenerationProgress state={state} streamingText={streamingText} />
           </div>
         )}
 
@@ -163,6 +164,7 @@ export default function Home() {
               <TemplateSelector
                 selectedTemplate={selectedTemplate}
                 onSelectTemplate={setSelectedTemplate}
+                suggestedCategory={analysis?.category}
               />
 
               <Separator />

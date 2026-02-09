@@ -135,32 +135,6 @@ const CATEGORY_SCENE_PROMPTS: Record<ProductAnalysis['category'], Record<ImageSt
 분위기: 소풍, 힐링, 자연 속 휴식.
 카메라: 편안하고 자연스러운 구도.`,
   },
-
-  other: {
-    lifestyle: `일상생활에서 제품을 사용하는 자연스러운 장면.
-깔끔하고 모던한 인테리어 배경, 제품이 자연스럽게 놓인 구도.
-조명: 자연광 또는 따뜻한 실내 조명.
-분위기: 일상의 편안함, 라이프스타일.
-카메라: 제품과 공간이 조화롭게 보이는 앵글.`,
-
-    studio: `순백색 배경의 전문 제품 촬영.
-제품을 중앙에 배치, 깔끔하고 군더더기 없는 구성.
-조명: 소프트박스 조명으로 균일하고 부드럽게.
-스타일: 이커머스 대표이미지 스타일.
-카메라: 제품이 선명하게 보이는 정면 또는 3/4 앵글.`,
-
-    premium: `고급스러운 배경과 소품으로 프리미엄 느낌 연출.
-대리석, 벨벳, 금속 등 고급 소재와 함께.
-조명: 드라마틱한 조명으로 고급감 강조.
-분위기: 럭셔리, 프리미엄, 하이엔드.
-카메라: 세련되고 우아한 구도.`,
-
-    natural: `자연 소재와 함께하는 내추럴한 세팅.
-나무, 돌, 식물 등 자연 요소와 조화롭게.
-조명: 부드러운 자연광.
-분위기: 친환경, 자연친화적, 오가닉.
-카메라: 따뜻하고 편안한 느낌의 구도.`,
-  },
 };
 
 const STYLE_LABELS: Record<ImageStyle, string> = {
@@ -218,7 +192,7 @@ function buildUserPrompt(options: GenerateProductSceneOptions): string {
 
   const scenePrompt = customPrompt ||
     CATEGORY_SCENE_PROMPTS[category]?.[style] ||
-    CATEGORY_SCENE_PROMPTS.other[style];
+    CATEGORY_SCENE_PROMPTS.processed_food[style];
 
   return `Product Name: ${productName}
 Category: ${category}
@@ -336,7 +310,7 @@ export async function generateCustomScene(
 function buildBackgroundPrompt(category: ProductAnalysis['category'], style: ImageStyle, customPrompt?: string): string {
   const scenePrompt = customPrompt ||
     CATEGORY_SCENE_PROMPTS[category]?.[style] ||
-    CATEGORY_SCENE_PROMPTS.other[style];
+    CATEGORY_SCENE_PROMPTS.processed_food[style];
 
   return `Create a background scene for ${category} product photography.
 
