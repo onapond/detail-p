@@ -3,6 +3,8 @@ import { refineCopywriting } from '@/lib/claude/copywriting';
 import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, CopywritingResult } from '@/types';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser();

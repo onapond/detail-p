@@ -5,6 +5,8 @@ import { PRODUCT_ANALYSIS_PROMPT } from '@/lib/claude/prompts';
 import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, ProductAnalysis } from '@/types';
 
+export const maxDuration = 60;
+
 const MAX_IMAGES = 10;
 const MAX_BASE64_LENGTH = 15_000_000;
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];

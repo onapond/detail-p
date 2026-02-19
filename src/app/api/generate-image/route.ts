@@ -7,6 +7,8 @@ import {
 import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, ProductAnalysis } from '@/types';
 
+export const maxDuration = 60;
+
 interface GenerateImageResponse {
   imageBase64: string;
   method: 'composite' | 'fallback';

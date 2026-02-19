@@ -5,6 +5,8 @@ import { COPYWRITING_PROMPT, CATEGORY_PROMPTS } from '@/lib/claude/prompts';
 import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, CopywritingResult, ProductAnalysis } from '@/types';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser();

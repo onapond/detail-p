@@ -3,6 +3,8 @@ import { generateDetailPageHTML } from '@/lib/claude/html-generator';
 import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, ProductAnalysis, CopywritingResult, Template } from '@/types';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser();

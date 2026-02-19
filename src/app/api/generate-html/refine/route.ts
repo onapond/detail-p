@@ -3,6 +3,8 @@ import { refineHTML } from '@/lib/claude/html-generator';
 import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse } from '@/types';
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser();
