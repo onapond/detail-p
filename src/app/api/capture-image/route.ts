@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
+import { getAuthUser } from '@/lib/supabase/auth';
 
 export async function POST(request: NextRequest) {
   let browser = null;
 
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
     const { html, width = 1200 } = await request.json();
 
     if (!html) {

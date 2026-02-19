@@ -299,43 +299,6 @@ crown, medal, gem, gift, percent, tag
 
 JSON만 응답해주세요. 설명 없이 순수 JSON만 출력하세요.`;
 
-// 기존 프롬프트 (호환성 유지)
-export const HTML_GENERATION_PROMPT = `당신은 전문 웹 디자이너입니다.
-제공된 정보를 바탕으로 상품 상세페이지 HTML을 생성해주세요.
-
-## 제품 정보
-{PRODUCT_DATA}
-
-## 카피라이팅
-{COPYWRITING_DATA}
-
-## 이미지 URL
-{IMAGE_URLS}
-
-## 템플릿 스타일
-{TEMPLATE_STYLE}
-
-## 요구사항
-1. 반응형 디자인 (모바일 최적화)
-2. 한국 쇼핑몰 스타일 (쿠팡, 네이버 스마트스토어 참고)
-3. 스크롤 유도 레이아웃
-4. 이미지와 텍스트 균형
-
-## 기술 스펙
-- HTML5 + 인라인 CSS (외부 의존성 없음)
-- 이미지: img 태그로 제공된 URL 사용
-- 폰트: 시스템 폰트 사용 (Pretendard 또는 Noto Sans KR 권장)
-- 색상: 식품 카테고리에 맞는 따뜻한 톤
-
-## 섹션 구성
-1. 히어로 섹션 (메인 이미지 + 헤드라인)
-2. 핵심 특징 섹션 (아이콘 + 텍스트)
-3. 제품 설명 섹션 (상세 이미지 + 텍스트)
-4. 신뢰 요소 섹션 (인증, 리뷰)
-5. CTA 섹션 (구매 버튼)
-
-완성된 HTML 코드만 응답해주세요. 설명이나 마크다운 없이 순수 HTML만 출력하세요.`;
-
 // 카테고리별 추가 프롬프트
 export const CATEGORY_PROMPTS: Record<string, string> = {
   coffee: `

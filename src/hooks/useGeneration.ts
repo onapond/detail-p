@@ -2,13 +2,16 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { extractJson } from '@/lib/claude/json-parser';
+import { readSSEStream } from '@/lib/claude/streaming-client';
 import type {
   UploadedImage,
   ProductAnalysis,
   CopywritingResult,
   GenerationState,
-  Template
+  Template,
+  Project,
 } from '@/types';
+import { PRODUCT_CATEGORIES } from '@/types';
 
 interface UseGenerationReturn {
   state: GenerationState;
@@ -16,71 +19,15 @@ interface UseGenerationReturn {
   copywriting: CopywritingResult | null;
   generatedHtml: string | null;
   streamingText: string;
+  projectId: string | null;
+  isSaving: boolean;
   generate: (images: UploadedImage[], template: Template) => Promise<boolean>;
   updateCopywriting: (copywriting: CopywritingResult) => void;
   refineCopy: (feedback: string) => Promise<void>;
   refineHtml: (feedback: string) => Promise<void>;
   reset: () => void;
-}
-
-// SSE event type (mirrored from streaming.ts for client use)
-type SSEEvent =
-  | { type: 'text'; data: string }
-  | { type: 'result'; data: string }
-  | { type: 'error'; data: string }
-  | { type: 'usage'; data: { inputTokens: number; outputTokens: number } };
-
-/**
- * Read SSE stream from a fetch response
- */
-async function readSSEStream(
-  response: Response,
-  callbacks: {
-    onText?: (text: string) => void;
-    onResult?: (result: string) => void;
-    onError?: (error: string) => void;
-  }
-): Promise<string> {
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error('No response body');
-
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let fullResult = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-
-    const lines = buffer.split('\n\n');
-    buffer = lines.pop() || '';
-
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-
-      try {
-        const event: SSEEvent = JSON.parse(line.slice(6));
-        switch (event.type) {
-          case 'text':
-            callbacks.onText?.(event.data);
-            break;
-          case 'result':
-            fullResult = event.data;
-            callbacks.onResult?.(event.data);
-            break;
-          case 'error':
-            callbacks.onError?.(event.data);
-            break;
-        }
-      } catch {
-        // Skip malformed events
-      }
-    }
-  }
-
-  return fullResult;
+  saveProject: (images: UploadedImage[], template: Template, displayName?: string) => Promise<string | null>;
+  loadProject: (project: Project) => void;
 }
 
 export function useGeneration(): UseGenerationReturn {
@@ -94,6 +41,8 @@ export function useGeneration(): UseGenerationReturn {
   const [generatedHtml, setGeneratedHtml] = useState<string | null>(null);
   const [streamingText, setStreamingText] = useState('');
   const streamingTextRef = useRef('');
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const generate = useCallback(async (images: UploadedImage[], template: Template): Promise<boolean> => {
     if (images.length === 0) {
@@ -133,6 +82,9 @@ export function useGeneration(): UseGenerationReturn {
       });
 
       if (!analyzeResponse.ok) {
+        if (analyzeResponse.status === 401) {
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
         const errorData = await analyzeResponse.json();
         throw new Error(errorData.error || '이미지 분석에 실패했습니다.');
       }
@@ -160,8 +112,7 @@ export function useGeneration(): UseGenerationReturn {
         analysisResult = extractJson<ProductAnalysis>(resultText);
 
         // Validate category
-        const validCategories = ['coffee', 'health_supplement', 'processed_food', 'beverage'];
-        if (!validCategories.includes(analysisResult.category)) {
+        if (!PRODUCT_CATEGORIES.includes(analysisResult.category)) {
           analysisResult.category = 'processed_food' as ProductAnalysis['category'];
         }
       } else {
@@ -192,6 +143,9 @@ export function useGeneration(): UseGenerationReturn {
       });
 
       if (!copyResponse.ok) {
+        if (copyResponse.status === 401) {
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
         const errorData = await copyResponse.json();
         throw new Error(errorData.error || '카피라이팅 생성에 실패했습니다.');
       }
@@ -243,6 +197,9 @@ export function useGeneration(): UseGenerationReturn {
       });
 
       if (!htmlResponse.ok) {
+        if (htmlResponse.status === 401) {
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
         const errorData = await htmlResponse.json();
         throw new Error(errorData.error || 'HTML 생성에 실패했습니다.');
       }
@@ -299,6 +256,9 @@ export function useGeneration(): UseGenerationReturn {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || '카피 수정에 실패했습니다.');
       }
@@ -338,6 +298,9 @@ export function useGeneration(): UseGenerationReturn {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || 'HTML 수정에 실패했습니다.');
       }
@@ -360,6 +323,109 @@ export function useGeneration(): UseGenerationReturn {
     }
   }, [generatedHtml]);
 
+  const saveProject = useCallback(async (
+    images: UploadedImage[],
+    template: Template,
+    displayName?: string
+  ): Promise<string | null> => {
+    if (!analysis || !copywriting || !generatedHtml || isSaving) return null;
+
+    setIsSaving(true);
+    try {
+      // 1. Create project + upload images
+      const imagePayload = await Promise.all(
+        images.map(async (img, index) => {
+          // Extract base64 from preview data URL
+          const base64 = img.preview.split(',')[1];
+          return {
+            base64,
+            filename: img.file?.name || `image_${index}.jpg`,
+            isMain: img.isMain,
+          };
+        })
+      );
+
+      const createRes = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project: {
+            name: analysis.productName,
+            displayName: displayName || analysis.productName,
+            category: analysis.category,
+            analysis,
+          },
+          images: imagePayload,
+        }),
+      });
+
+      if (!createRes.ok) {
+        if (createRes.status === 401) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
+        const err = await createRes.json();
+        throw new Error(err.error || '프로젝트 생성에 실패했습니다.');
+      }
+
+      const { data: createData } = await createRes.json();
+      const newProjectId = createData.projectId;
+
+      // 2. Save generation results
+      const saveRes = await fetch(`/api/projects/${newProjectId}/save-generation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId: template.id,
+          copywriting,
+          htmlContent: generatedHtml,
+        }),
+      });
+
+      if (!saveRes.ok) {
+        const err = await saveRes.json();
+        throw new Error(err.error || '생성 결과 저장에 실패했습니다.');
+      }
+
+      setProjectId(newProjectId);
+      return newProjectId;
+    } catch (error) {
+      console.error('Save project error:', error);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [analysis, copywriting, generatedHtml, isSaving]);
+
+  const loadProject = useCallback((project: Project) => {
+    if (project.analysis) {
+      setAnalysis(project.analysis);
+    }
+    if (project.page?.copywriting) {
+      setCopywriting(project.page.copywriting);
+    }
+    if (project.page?.htmlContent) {
+      // Replace base64 image URLs with Supabase public URLs if images exist
+      let html = project.page.htmlContent;
+      if (project.images.length > 0) {
+        project.images
+          .sort((a, b) => a.orderIndex - b.orderIndex)
+          .forEach((img, index) => {
+            html = html.replace(
+              new RegExp(`\\{\\{IMAGE_${index + 1}\\}\\}`, 'g'),
+              img.publicUrl
+            );
+          });
+      }
+      setGeneratedHtml(html);
+    }
+    setProjectId(project.id);
+    setState({
+      step: 'complete',
+      progress: 100,
+      message: '저장된 프로젝트를 불러왔습니다.',
+    });
+    setStreamingText('');
+    streamingTextRef.current = '';
+  }, []);
+
   const reset = useCallback(() => {
     setState({
       step: 'idle',
@@ -371,6 +437,8 @@ export function useGeneration(): UseGenerationReturn {
     setGeneratedHtml(null);
     setStreamingText('');
     streamingTextRef.current = '';
+    setProjectId(null);
+    setIsSaving(false);
   }, []);
 
   return {
@@ -379,10 +447,14 @@ export function useGeneration(): UseGenerationReturn {
     copywriting,
     generatedHtml,
     streamingText,
+    projectId,
+    isSaving,
     generate,
     updateCopywriting,
     refineCopy,
     refineHtml,
     reset,
+    saveProject,
+    loadProject,
   };
 }

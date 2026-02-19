@@ -1,9 +1,20 @@
-import { NextResponse } from 'next/server';
-import { getUsageSummary, resetUsage } from '@/lib/usage-tracker';
+import { NextRequest, NextResponse } from 'next/server';
+import { getUsageSummary } from '@/lib/usage-tracker';
+import { getAuthUser } from '@/lib/supabase/auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const summary = getUsageSummary();
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
+    const period = (request.nextUrl.searchParams.get('period') || 'month') as 'day' | 'month' | 'all';
+    const summary = await getUsageSummary(user.id, period);
+
     return NextResponse.json({
       success: true,
       data: summary,
@@ -12,22 +23,6 @@ export async function GET() {
     console.error('Usage fetch error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch usage data' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE() {
-  try {
-    resetUsage();
-    return NextResponse.json({
-      success: true,
-      message: 'Usage data reset successfully',
-    });
-  } catch (error) {
-    console.error('Usage reset error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to reset usage data' },
       { status: 500 }
     );
   }

@@ -2,10 +2,19 @@ import { NextResponse } from 'next/server';
 import { generateCopywriting } from '@/lib/claude/copywriting';
 import { createStreamingResponse, SSE_HEADERS } from '@/lib/claude/streaming';
 import { COPYWRITING_PROMPT, CATEGORY_PROMPTS } from '@/lib/claude/prompts';
+import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, CopywritingResult, ProductAnalysis } from '@/types';
 
 export async function POST(request: Request) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { analysis, stream: useStreaming } = body as {
       analysis: ProductAnalysis;
@@ -32,14 +41,14 @@ export async function POST(request: Request) {
 
       const stream = createStreamingResponse(
         [{ role: 'user', content: prompt }],
-        { usageEndpoint: '/api/copywriting' }
+        { usageEndpoint: '/api/copywriting', userId: user.id }
       );
 
       return new Response(stream, { headers: SSE_HEADERS });
     }
 
     // Non-streaming mode (backward compatible)
-    const copywriting = await generateCopywriting(analysis);
+    const copywriting = await generateCopywriting(analysis, user.id);
 
     return NextResponse.json<ApiResponse<CopywritingResult>>({
       success: true,

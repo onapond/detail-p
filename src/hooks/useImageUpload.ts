@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { UploadedImage } from '@/types';
+import type { UploadedImage, ProjectImage } from '@/types';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -21,6 +21,7 @@ interface UseImageUploadReturn {
   setMainImage: (id: string) => void;
   reorderImages: (fromIndex: number, toIndex: number) => void;
   clearImages: () => void;
+  loadFromProject: (projectImages: ProjectImage[]) => void;
 }
 
 export function useImageUpload(): UseImageUploadReturn {
@@ -176,6 +177,20 @@ export function useImageUpload(): UseImageUploadReturn {
     setError(null);
   }, []);
 
+  const loadFromProject = useCallback((projectImages: ProjectImage[]) => {
+    const loaded: UploadedImage[] = projectImages
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .map((img) => ({
+        id: img.id,
+        file: new File([], 'loaded.jpg', { type: 'image/jpeg' }),
+        preview: img.publicUrl,
+        url: img.publicUrl,
+        isMain: img.isMain,
+      }));
+    setImages(loaded);
+    setError(null);
+  }, []);
+
   return {
     images,
     isUploading,
@@ -185,5 +200,6 @@ export function useImageUpload(): UseImageUploadReturn {
     setMainImage,
     reorderImages,
     clearImages,
+    loadFromProject,
   };
 }

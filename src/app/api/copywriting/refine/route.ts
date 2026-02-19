@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import { refineCopywriting } from '@/lib/claude/copywriting';
+import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, CopywritingResult } from '@/types';
 
 export async function POST(request: Request) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { copywriting, feedback } = body as {
       copywriting: CopywritingResult;
@@ -24,7 +33,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const refined = await refineCopywriting(copywriting, feedback);
+    const refined = await refineCopywriting(copywriting, feedback, user.id);
 
     return NextResponse.json<ApiResponse<CopywritingResult>>({
       success: true,

@@ -1,0 +1,19 @@
+{
+  "detail-p": {
+    "phase": "archived",
+    "matchRate": 91,
+    "codeQualityScore": 85,
+    "iterationCount": 1,
+    "startedAt": "2026-02-09T00:00:00Z",
+    "archivedAt": "2026-02-11T00:00:00Z",
+    "archivedTo": "docs/archive/2026-02/detail-p/"
+  },
+  "phase2-infra": {
+    "phase": "do",
+    "feature": "phase2-infra",
+    "startedAt": "2026-02-11T00:00:00Z",
+    "planCreatedAt": "2026-02-11T00:00:00Z",
+    "designCreatedAt": "2026-02-11T00:00:00Z",
+    "doCompletedAt": "2026-02-11T00:00:00Z"
+  }
+}

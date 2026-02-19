@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import { generateDetailPageHTML } from '@/lib/claude/html-generator';
+import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, ProductAnalysis, CopywritingResult, Template } from '@/types';
 
 export async function POST(request: Request) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { analysis, copywriting, imageCount, template } = body as {
       analysis: ProductAnalysis;
@@ -19,7 +28,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const html = await generateDetailPageHTML(analysis, copywriting, imageCount || 0, template);
+    const html = await generateDetailPageHTML(analysis, copywriting, imageCount || 0, template, user.id);
 
     return NextResponse.json<ApiResponse<string>>({
       success: true,

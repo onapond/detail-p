@@ -1,6 +1,9 @@
 // 제품 카테고리 타입
 export type ProductCategory = 'coffee' | 'health_supplement' | 'processed_food' | 'beverage';
 
+// 제품 카테고리 상수 배열
+export const PRODUCT_CATEGORIES: readonly ProductCategory[] = ['coffee', 'health_supplement', 'processed_food', 'beverage'] as const;
+
 // 템플릿 스타일 타입
 export type TemplateStyle = 'modern' | 'classic' | 'premium';
 
@@ -111,6 +114,87 @@ export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+// 사용자 프로필 타입
+export interface UserProfile {
+  id: string;
+  email: string;
+  company_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// 인증 상태 타입
+export interface AuthState {
+  user: import('@supabase/supabase-js').User | null;
+  profile: UserProfile | null;
+  session: import('@supabase/supabase-js').Session | null;
+  isLoading: boolean;
+}
+
+// === Project Persistence Types (Phase 2-2) ===
+
+// 저장된 이미지 레코드
+export interface ProjectImage {
+  id: string;
+  productId: string;
+  storagePath: string;
+  publicUrl: string;
+  isMain: boolean;
+  orderIndex: number;
+  createdAt: string;
+}
+
+// 프로젝트 전체 뷰 (product + generated_page + images)
+export interface Project {
+  id: string;
+  userId: string;
+  name: string;
+  displayName: string | null;
+  category: ProductCategory | null;
+  analysis: ProductAnalysis | null;
+  createdAt: string;
+  updatedAt: string;
+  // joined from generated_pages
+  page: {
+    id: string;
+    templateId: string;
+    copywriting: CopywritingResult | null;
+    htmlContent: string | null;
+    status: 'draft' | 'published' | 'archived';
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  // joined from product_images
+  images: ProjectImage[];
+}
+
+// 프로젝트 목록 아이템 (HTML blob 제외)
+export interface ProjectListItem {
+  id: string;
+  name: string;
+  displayName: string | null;
+  category: ProductCategory | null;
+  status: 'draft' | 'published' | 'archived' | null;
+  thumbnailUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 프로젝트 생성 입력
+export interface CreateProjectInput {
+  name: string;
+  displayName?: string;
+  category: ProductCategory;
+  analysis: ProductAnalysis;
+}
+
+// 생성 결과 저장 입력
+export interface SaveGenerationInput {
+  templateId: string;
+  copywriting: CopywritingResult;
+  htmlContent: string;
 }
 
 // AI 생성 이미지 타입

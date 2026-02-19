@@ -1,9 +1,18 @@
 import { NextResponse } from 'next/server';
 import { refineHTML } from '@/lib/claude/html-generator';
+import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse } from '@/types';
 
 export async function POST(request: Request) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { html, feedback } = body as {
       html: string;
@@ -24,7 +33,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const refined = await refineHTML(html, feedback);
+    const refined = await refineHTML(html, feedback, user.id);
 
     return NextResponse.json<ApiResponse<string>>({
       success: true,

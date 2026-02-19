@@ -72,7 +72,8 @@ export async function generateDetailPageHTML(
   analysis: ProductAnalysis,
   copywriting: CopywritingResult,
   imageCount: number,
-  template: Template
+  template: Template,
+  userId: string
 ): Promise<string> {
   return withRetry(async () => {
     const client = createAnthropicClient();
@@ -97,7 +98,7 @@ export async function generateDetailPageHTML(
 
     // Track usage
     if (response.usage) {
-      trackUsage('/api/generate-html', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+      await trackUsage(userId, '/api/generate-html', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
     }
 
     const textContent = response.content.find((block) => block.type === 'text');
@@ -235,11 +236,6 @@ function replacePlaceholders(
   html = html.replace(/\{\{ICON_CHECK\}\}/g, getIconSvg('check', 20, 'currentColor'));
   html = html.replace(/\{\{ICON_CHECK_CIRCLE\}\}/g, getIconSvg('check-circle', 16, 'currentColor'));
   html = html.replace(/\{\{ICON_COFFEE\}\}/g, getIconSvg('coffee', 24, '#ffffff'));
-
-  // 이미지 placeholder (나중에 실제 URL로 교체)
-  for (let i = 1; i <= Math.max(imageCount, 3); i++) {
-    html = html.replace(new RegExp(`\\{\\{IMAGE_${i}\\}\\}`, 'g'), `{{IMAGE_${i}}}`);
-  }
 
   return html;
 }
@@ -522,7 +518,8 @@ export function replaceImagePlaceholders(html: string, imageUrls: string[]): str
 // Generate HTML with specific modifications
 export async function refineHTML(
   currentHtml: string,
-  feedback: string
+  feedback: string,
+  userId: string
 ): Promise<string> {
   return withRetry(async () => {
     const client = createAnthropicClient();
@@ -557,7 +554,7 @@ ${feedback}
 
     // Track usage
     if (response.usage) {
-      trackUsage('/api/generate-html/refine', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+      await trackUsage(userId, '/api/generate-html/refine', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
     }
 
     const textContent = response.content.find((block) => block.type === 'text');

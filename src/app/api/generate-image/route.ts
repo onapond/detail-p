@@ -4,6 +4,7 @@ import {
   generateProductSceneWithComposite,
   type ImageStyle
 } from '@/lib/openai';
+import { getAuthUser } from '@/lib/supabase/auth';
 import type { ApiResponse, ProductAnalysis } from '@/types';
 
 interface GenerateImageResponse {
@@ -13,6 +14,14 @@ interface GenerateImageResponse {
 
 export async function POST(request: Request) {
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: '인증이 필요합니다.' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const {
       productImageBase64,

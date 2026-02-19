@@ -6,7 +6,8 @@ import { trackUsage } from '@/lib/usage-tracker';
 import type { ProductAnalysis, CopywritingResult } from '@/types';
 
 export async function generateCopywriting(
-  analysis: ProductAnalysis
+  analysis: ProductAnalysis,
+  userId: string
 ): Promise<CopywritingResult> {
   return withRetry(async () => {
     const client = createAnthropicClient();
@@ -40,7 +41,7 @@ export async function generateCopywriting(
     const copywriting = extractJson<CopywritingResult>(textContent.text);
 
     if (response.usage) {
-      trackUsage('/api/copywriting', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+      await trackUsage(userId, '/api/copywriting', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
     }
 
     return copywriting;
@@ -49,7 +50,8 @@ export async function generateCopywriting(
 
 export async function refineCopywriting(
   copywriting: CopywritingResult,
-  feedback: string
+  feedback: string,
+  userId: string
 ): Promise<CopywritingResult> {
   return withRetry(async () => {
     const client = createAnthropicClient();
@@ -83,7 +85,7 @@ ${feedback}
     const refinedCopywriting = extractJson<CopywritingResult>(textContent.text);
 
     if (response.usage) {
-      trackUsage('/api/copywriting/refine', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
+      await trackUsage(userId, '/api/copywriting/refine', CLAUDE_MODEL, response.usage.input_tokens, response.usage.output_tokens);
     }
 
     return refinedCopywriting;

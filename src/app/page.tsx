@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,13 +13,19 @@ import { HtmlPreview } from '@/components/preview/HtmlPreview';
 import { DownloadPanel } from '@/components/download/DownloadPanel';
 import { GenerationProgress } from '@/components/GenerationProgress';
 import { ImageGenerator } from '@/components/image-generator/ImageGenerator';
+import { SaveProjectDialog } from '@/components/project/SaveProjectDialog';
+import { ProjectList } from '@/components/project/ProjectList';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useGeneration } from '@/hooks/useGeneration';
+import { useProjects } from '@/hooks/useProjects';
 import { templates, getDefaultTemplate } from '@/lib/templates';
 import type { Template } from '@/types';
-import { Sparkles, Upload, Wand2, Eye, Download, Coffee, RefreshCw } from 'lucide-react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { Sparkles, Upload, Wand2, Eye, Download, Coffee, RefreshCw, LogOut, Save } from 'lucide-react';
 
 export default function Home() {
+  const { user, signOut } = useAuth();
+
   const {
     images,
     isUploading,
@@ -28,6 +34,7 @@ export default function Home() {
     removeImage,
     setMainImage,
     clearImages,
+    loadFromProject,
   } = useImageUpload();
 
   const {
@@ -36,15 +43,37 @@ export default function Home() {
     copywriting,
     generatedHtml,
     streamingText,
+    projectId,
+    isSaving,
     generate,
     updateCopywriting,
     refineCopy,
     refineHtml,
     reset,
+    saveProject,
+    loadProject,
   } = useGeneration();
+
+  const {
+    projects,
+    isLoading: isLoadingProjects,
+    totalCount,
+    hasMore,
+    fetchProjects,
+    loadMore,
+    deleteProject,
+    getProject,
+  } = useProjects();
 
   const [selectedTemplate, setSelectedTemplate] = useState<Template>(templates[0]);
   const [activeTab, setActiveTab] = useState('upload');
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Fetch projects on mount
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleGenerate = async () => {
     const success = await generate(images, selectedTemplate);
@@ -57,7 +86,48 @@ export default function Home() {
     clearImages();
     reset();
     setActiveTab('upload');
+    setSaveError(null);
   };
+
+  const handleSave = async (displayName: string) => {
+    setSaveError(null);
+    try {
+      await saveProject(images, selectedTemplate, displayName);
+      // Refresh project list
+      await fetchProjects();
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : '저장에 실패했습니다.';
+      setSaveError(msg);
+      throw error;
+    }
+  };
+
+  const handleLoadProject = useCallback(async (id: string) => {
+    const project = await getProject(id);
+    if (!project) return;
+
+    // Load images
+    if (project.images.length > 0) {
+      loadFromProject(project.images);
+    }
+
+    // Find matching template
+    if (project.page?.templateId) {
+      const matchingTemplate = templates.find((t) => t.id === project.page!.templateId);
+      if (matchingTemplate) {
+        setSelectedTemplate(matchingTemplate);
+      }
+    }
+
+    // Load generation data
+    loadProject(project);
+    setActiveTab('result');
+  }, [getProject, loadFromProject, loadProject]);
+
+  const handleDeleteProject = useCallback(async (id: string) => {
+    if (!confirm('프로젝트를 삭제하시겠습니까?')) return;
+    await deleteProject(id);
+  }, [deleteProject]);
 
   const isGenerating = ['analyzing', 'generating_copy', 'generating_layout'].includes(state.step);
 
@@ -72,11 +142,30 @@ export default function Home() {
             <span className="text-sm text-muted-foreground">AI 상세페이지 생성기</span>
           </div>
           <div className="flex items-center gap-2">
+            {state.step === 'complete' && !projectId && (
+              <Button variant="default" size="sm" onClick={() => setSaveDialogOpen(true)}>
+                <Save className="h-4 w-4 mr-2" />
+                저장
+              </Button>
+            )}
+            {state.step === 'complete' && projectId && (
+              <span className="text-sm text-green-600 font-medium">저장됨</span>
+            )}
             {state.step === 'complete' && (
               <Button variant="outline" size="sm" onClick={handleReset}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 새로 만들기
               </Button>
+            )}
+            {user && (
+              <>
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                  {user.email}
+                </span>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -86,24 +175,46 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section - Only show before generation */}
         {state.step === 'idle' && images.length === 0 && (
-          <Card className="mb-8 bg-gradient-to-r from-primary/10 to-primary/5">
-            <CardContent className="py-12 text-center">
-              <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <h2 className="text-2xl font-bold mb-2">
-                AI가 만드는 식품 상세페이지
-              </h2>
-              <p className="text-muted-foreground max-w-lg mx-auto">
-                제품 이미지만 업로드하면 AI가 분석하고, 마케팅 카피를 작성하고,
-                쇼핑몰에 바로 사용할 수 있는 상세페이지를 생성합니다.
-              </p>
-            </CardContent>
-          </Card>
+          <>
+            <Card className="mb-8 bg-gradient-to-r from-primary/10 to-primary/5">
+              <CardContent className="py-12 text-center">
+                <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary" />
+                <h2 className="text-2xl font-bold mb-2">
+                  AI가 만드는 식품 상세페이지
+                </h2>
+                <p className="text-muted-foreground max-w-lg mx-auto">
+                  제품 이미지만 업로드하면 AI가 분석하고, 마케팅 카피를 작성하고,
+                  쇼핑몰에 바로 사용할 수 있는 상세페이지를 생성합니다.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Project List */}
+            <div className="mb-8">
+              <ProjectList
+                projects={projects}
+                isLoading={isLoadingProjects}
+                totalCount={totalCount}
+                hasMore={hasMore}
+                onLoadMore={loadMore}
+                onSelect={handleLoadProject}
+                onDelete={handleDeleteProject}
+              />
+            </div>
+          </>
         )}
 
         {/* Generation Progress */}
         {isGenerating && (
           <div className="mb-8">
             <GenerationProgress state={state} streamingText={streamingText} />
+          </div>
+        )}
+
+        {/* Save Error */}
+        {saveError && (
+          <div className="mb-4 p-3 bg-destructive/10 text-destructive text-sm rounded-md">
+            {saveError}
           </div>
         )}
 
@@ -276,6 +387,15 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Save Project Dialog */}
+      <SaveProjectDialog
+        open={saveDialogOpen}
+        onOpenChange={setSaveDialogOpen}
+        defaultName={analysis?.productName || ''}
+        isSaving={isSaving}
+        onSave={handleSave}
+      />
 
       {/* Footer */}
       <footer className="border-t mt-16">

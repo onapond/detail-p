@@ -77,6 +77,9 @@ ALTER TABLE generation_history ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own profile" ON profiles
   FOR SELECT USING (auth.uid() = id);
 
+CREATE POLICY "Users can insert own profile" ON profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "Users can update own profile" ON profiles
   FOR UPDATE USING (auth.uid() = id);
 
@@ -141,6 +144,32 @@ CREATE POLICY "Users can view own history" ON generation_history
 CREATE POLICY "Users can insert own history" ON generation_history
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- Auto-create profile on user signup (trigger)
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, company_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data->>'company_name'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Drop existing trigger if exists, then create
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Phase 2-2 Migration: Soft delete support for products
+ALTER TABLE products ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;
+CREATE INDEX IF NOT EXISTS idx_products_is_deleted ON products(is_deleted);
+
 -- Create storage bucket for product images
 -- Run this in Supabase Dashboard > Storage > Create new bucket
 -- Bucket name: product-images
@@ -149,3 +178,27 @@ CREATE POLICY "Users can insert own history" ON generation_history
 -- Storage policies (run in Supabase Dashboard > Storage > Policies)
 -- Allow authenticated users to upload images
 -- Allow public read access for images
+
+-- Phase 2-3 Migration: API Usage Tracking
+CREATE TABLE IF NOT EXISTS api_usage (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
+  endpoint TEXT NOT NULL,
+  model TEXT NOT NULL,
+  input_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0,
+  cost_usd NUMERIC(10, 6) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_usage_user_id ON api_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_created_at ON api_usage(created_at);
+CREATE INDEX IF NOT EXISTS idx_api_usage_user_month ON api_usage(user_id, created_at DESC);
+
+ALTER TABLE api_usage ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own usage" ON api_usage
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Authenticated users can insert own usage" ON api_usage
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
